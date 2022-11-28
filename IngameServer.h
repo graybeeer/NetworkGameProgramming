@@ -13,7 +13,7 @@ class INGAME_SERVER
 {
 public:
 	//인게임
-	void receivePress(char*); //[서버] 클라이언트 입력 값 수신
+	
 	void inputManagement(); //[서버] 클라이언트 입력값 처리
 	void objectInteract(); //[서버] 오브젝트 충돌처리
 	void sendState(); //[서버] 플레이어 정보, 오브젝트 정보를 송신하는 함수
