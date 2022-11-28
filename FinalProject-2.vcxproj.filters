@@ -91,6 +91,9 @@
     <Filter Include="헤더 파일\Object\UI">
       <UniqueIdentifier>{ab21e801-e941-4e87-bdc8-5488e59814f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Object\UI">
+      <UniqueIdentifier>{0677bfc5-8410-4e2b-8948-76e5f6c05e70}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FinalProject-2.h">
@@ -286,6 +289,9 @@
     </ClCompile>
     <ClCompile Include="IngameClient.cpp">
       <Filter>소스 파일\Core\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="UI.cpp">
+      <Filter>소스 파일\Object\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
