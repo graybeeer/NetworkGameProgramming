@@ -204,10 +204,12 @@
     <ClCompile Include="Boss.cpp" />
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Button.cpp" />
+    <ClCompile Include="ChooseMenuStage.cpp" />
     <ClCompile Include="EffectManager.cpp" />
     <ClCompile Include="FinalProject-2.cpp" />
     <ClCompile Include="IngameClient.cpp" />
     <ClCompile Include="IngameServer.cpp" />
+    <ClCompile Include="MainMenuStage.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="WaitingClient.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -215,6 +217,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="WaitingRoomStage.cpp" />
     <ClCompile Include="WaitingServer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>

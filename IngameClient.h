@@ -17,5 +17,6 @@ private:
 	int playerCount{ 0 }; //대기방 안의 클라이언트 플레이어 수
 	int myNumber{ 0 }; //내 클라이언트 번호
 	PlayerInfo player[3];
-	
+	Player serverPlayer;
+	Player clientPlayer[3];
 };

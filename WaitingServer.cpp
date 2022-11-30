@@ -34,7 +34,6 @@ DWORD WINAPI roomDataProcessingThread(LPVOID lpParam)
 	/// </summary>
 	/// <param name="lpParam"></param>
 	/// <returns></returns>
-
 }
 DWORD WINAPI WaitFiveSecAndStart(LPVOID lpParam)
 {

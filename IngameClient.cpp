@@ -17,6 +17,7 @@ void INGAME_CLIENT::receiveState()
 
 void INGAME_CLIENT::Render()
 {
+
 }
 
 void INGAME_CLIENT::receiveEnd()
@@ -25,6 +26,7 @@ void INGAME_CLIENT::receiveEnd()
 	/// 게임 종료 명령어 받음
 	/// </summary>
 	//게임 종료 함수
+	exit(0);
 }
 
 void INGAME_CLIENT::stringAnalysis(char* command)
