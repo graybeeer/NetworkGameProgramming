@@ -157,7 +157,6 @@
     <ClInclude Include="Monster.h" />
     <ClInclude Include="Hpbar.h" />
     <ClInclude Include="MoveObject.h" />
-    <ClInclude Include="Network.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Portal.h" />
@@ -184,7 +183,6 @@
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="Monster.cpp" />
     <ClCompile Include="MoveObject.cpp" />
-    <ClCompile Include="Network.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Portal.cpp" />

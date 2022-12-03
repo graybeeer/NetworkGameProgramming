@@ -3,6 +3,7 @@
 // FinalProject-2.rc에서 사용되고 있습니다.
 //
 #define IDC_MYICON                      2
+#define IDCANCEL2                       3
 #define IDD_FINALPROJECT2_DIALOG        102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
@@ -18,6 +19,7 @@
 #define IDR_MENU1                       132
 #define IDD_DIALOG_IMG                  133
 #define IDD_DIALOG_SELIMG               134
+#define IDD_DIALOG_SERVER               135
 #define IDC_EDIT1                       1000
 #define IDC_SELIMG                      1000
 #define IDC_LIST2                       1004
@@ -32,6 +34,15 @@
 #define IDC_ADDIMGKEY                   1010
 #define IDC_ADDIMGFILENAME              1011
 #define IDC_OBJTAG                      1012
+#define IDC_HOSTNAME                    1014
+#define IDC_P1NAME                      1015
+#define IDC_P2NAME                      1016
+#define IDC_P3NAME                      1017
+#define IDC_IPADDRESS1                  1018
+#define IDC_HOSTNAME2                   1019
+#define IDC_HOSTNAME3                   1020
+#define IDC_HOSTNAME4                   1021
+#define IDC_HOSTNAME5                   1022
 #define ID_32771                        32771
 #define ID_32772                        32772
 #define ID_32773                        32773
@@ -53,9 +64,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        135
+#define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         32785
-#define _APS_NEXT_CONTROL_VALUE         1014
+#define _APS_NEXT_CONTROL_VALUE         1019
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

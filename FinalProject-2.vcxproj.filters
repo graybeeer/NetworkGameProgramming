@@ -168,9 +168,6 @@
     <ClInclude Include="Button.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Network.h">
-      <Filter>헤더 파일\Core</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FinalProject-2.cpp">
@@ -238,9 +235,6 @@
     </ClCompile>
     <ClCompile Include="Button.cpp">
       <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Network.cpp">
-      <Filter>소스 파일\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

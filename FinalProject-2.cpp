@@ -8,6 +8,7 @@
 
 // 전역 변수:
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
+HWND hWndAll;
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
@@ -24,6 +25,7 @@ INT_PTR CALLBACK    DialogProc_Img(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    DialogProc_SelImg(HWND, UINT, WPARAM, LPARAM);
 #endif
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    DialogProc_Server(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -53,6 +55,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg{ };
 
+    DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG_SERVER), msg.hwnd, DialogProc_Server);
     // 기본 메시지 루프입니다:
     while (true) {
         if (msg.message == WM_QUIT) {
@@ -132,6 +135,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       100, 0, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance, nullptr);
 
+   hWndAll = hWnd;
+   EnableWindow(hWnd, FALSE);
    clientMinMax = { rc.right - rc.left, rc.bottom - rc.top };
    if (!hWnd) {
       return FALSE;
@@ -452,4 +457,22 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+
+// 대화상자 프로시저
+INT_PTR CALLBACK DialogProc_Server(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+
+    switch (uMsg) {
+    case WM_INITDIALOG:
+        return TRUE;
+    case WM_COMMAND:
+        return TRUE;
+    case WM_CLOSE:
+        EnableWindow(hWndAll, TRUE);
+        EndDialog(hDlg, LOWORD(wParam));
+        return TRUE;
+    }
+    return FALSE;
 }
