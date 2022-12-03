@@ -204,6 +204,9 @@
     <ClInclude Include="UI.h">
       <Filter>헤더 파일\Object\UI</Filter>
     </ClInclude>
+    <ClInclude Include="NetworkConnet.h">
+      <Filter>헤더 파일\Core\Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FinalProject-2.cpp">
@@ -301,6 +304,9 @@
     </ClCompile>
     <ClCompile Include="WaitingRoomStage.cpp">
       <Filter>소스 파일\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkConnet.cpp">
+      <Filter>소스 파일\Core\Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

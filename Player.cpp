@@ -187,6 +187,10 @@ void Player::InvincibleEnd() {
 }
 
 void Player::Update(float deltaTime) {
+	/// <summary>
+	/// 플레이어 업데이터 함수
+	/// </summary>
+	/// <param name="deltaTime">델타타임</param>
 	if (m_invincible) {
 		m_invincibleTime += deltaTime;
 		InvincibleEnd();

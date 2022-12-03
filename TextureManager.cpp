@@ -39,7 +39,7 @@ void TextureManager::Destroy() {
 }
 
 bool TextureManager::Init(HINSTANCE hInst, HDC 
-	DC, const wchar_t* backGroundFileName) {
+	mainDC, const wchar_t* backGroundFileName) {
 	m_hInst = hInst;
 	if (!m_hInst) {
 		return false;

@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "IngameClient.h"
+DWORD WINAPI inGameClientReceiveThread(LPVOID lpParam)
+{
 
+}
 void INGAME_CLIENT::sendPress()
 {
 	/// <summary>

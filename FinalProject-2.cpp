@@ -4,6 +4,7 @@
 
 #include "GameFrame.h"
 #include "FinalProject-2.h"
+#include "NetworkConnet.h"
 
 #define MAX_LOADSTRING 100
 
@@ -53,7 +54,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_FINALPROJECT2));
 
     MSG msg{ };
-
+    //clientConnect(); 네트워크 연결
     // 기본 메시지 루프입니다:
     while (true) {
         if (msg.message == WM_QUIT) {
