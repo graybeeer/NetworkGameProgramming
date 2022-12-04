@@ -9,6 +9,7 @@
 #include "Monster.h"
 #include "Barigate.h"
 #include "Stage.h"
+#include "Server.h"
 
 class GameFrame {
 public:

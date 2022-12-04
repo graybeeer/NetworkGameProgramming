@@ -463,12 +463,36 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 // 대화상자 프로시저
 INT_PTR CALLBACK DialogProc_Server(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    WAITING_ROOM wr;
+    HWND HwndEditNickname = GetDlgItem(hDlg, IDC_EDITNICKNAME);
+    HWND HwndIpaddress = GetDlgItem(hDlg, IDC_IPADDRESS);
+    HWND HwndMakeroom = GetDlgItem(hDlg, IDC_MAKEROOM);
+    HWND HwndConnectroom = GetDlgItem(hDlg, IDC_CONNECTROOM);
+
 
     switch (uMsg) {
     case WM_INITDIALOG:
         return TRUE;
     case WM_COMMAND:
-        return TRUE;
+        switch (LOWORD(wParam)) {
+        case IDC_MAKEROOM:
+            char nickbuf[NICKBUFSIZE];
+            GetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf, NICKBUFSIZE);
+            if (nickbuf[0] != '\0') {
+                if (wr.MAKE_ROOM() == 0) {
+                    EnableWindow(HwndMakeroom, FALSE);
+                    EnableWindow(HwndIpaddress, FALSE);
+                    EnableWindow(HwndEditNickname, FALSE);
+                    EnableWindow(HwndConnectroom, FALSE);
+                    SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf);
+                    SetDlgItemTextA(hDlg, IDC_HOSTNAME, nickbuf);
+                    char ipinitbuf[5] = "\0";
+                    SetDlgItemTextA(hDlg, IDC_IPADDRESS, ipinitbuf);
+                }
+            }
+            return TRUE;
+        }
+        return FALSE;
     case WM_CLOSE:
         EnableWindow(hWndAll, TRUE);
         EndDialog(hDlg, LOWORD(wParam));

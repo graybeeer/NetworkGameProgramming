@@ -22,6 +22,7 @@
 #define IDD_DIALOG_SERVER               135
 #define IDC_EDIT1                       1000
 #define IDC_SELIMG                      1000
+#define IDC_EDITNICKNAME                1000
 #define IDC_LIST2                       1004
 #define IDC_EDIT_ADDBG                  1005
 #define IDC_ADDBGKEY                    1005
@@ -30,7 +31,9 @@
 #define IDC_ADDBGFILENAME               1007
 #define IDC_BUTTON1                     1008
 #define IDC_ADDBT                       1008
+#define IDC_MAKEROOM                    1008
 #define IDC_BUTTON2                     1009
+#define IDC_CONNECTROOM                 1009
 #define IDC_ADDIMGKEY                   1010
 #define IDC_ADDIMGFILENAME              1011
 #define IDC_OBJTAG                      1012
@@ -39,6 +42,7 @@
 #define IDC_P2NAME                      1016
 #define IDC_P3NAME                      1017
 #define IDC_IPADDRESS1                  1018
+#define IDC_IPADDRESS                   1018
 #define IDC_HOSTNAME2                   1019
 #define IDC_HOSTNAME3                   1020
 #define IDC_HOSTNAME4                   1021
