@@ -468,6 +468,8 @@ INT_PTR CALLBACK DialogProc_Server(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
     HWND HwndIpaddress = GetDlgItem(hDlg, IDC_IPADDRESS);
     HWND HwndMakeroom = GetDlgItem(hDlg, IDC_MAKEROOM);
     HWND HwndConnectroom = GetDlgItem(hDlg, IDC_CONNECTROOM);
+    char nickbuf[NICKBUFSIZE];
+    char ipbuf[60] = "\0";
 
 
     switch (uMsg) {
@@ -476,18 +478,40 @@ INT_PTR CALLBACK DialogProc_Server(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
         case IDC_MAKEROOM:
-            char nickbuf[NICKBUFSIZE];
             GetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf, NICKBUFSIZE);
             if (nickbuf[0] != '\0') {
-                if (wr.MAKE_ROOM() == 0) {
+                if (wr.MAKE_ROOM(hDlg) == 0) {
                     EnableWindow(HwndMakeroom, FALSE);
                     EnableWindow(HwndIpaddress, FALSE);
                     EnableWindow(HwndEditNickname, FALSE);
                     EnableWindow(HwndConnectroom, FALSE);
                     SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf);
                     SetDlgItemTextA(hDlg, IDC_HOSTNAME, nickbuf);
-                    char ipinitbuf[5] = "\0";
-                    SetDlgItemTextA(hDlg, IDC_IPADDRESS, ipinitbuf);
+                    SetDlgItemTextA(hDlg, IDC_IPADDRESS, ipbuf);
+                }
+            }
+            return TRUE;
+        case IDC_CONNECTROOM:
+            GetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf, NICKBUFSIZE);
+            if (nickbuf[0] != '\0') {
+                GetDlgItemTextA(hDlg, IDC_IPADDRESS, ipbuf, NICKBUFSIZE);
+                int retval = wr.CONNECT_ROOM(hDlg, ipbuf, nickbuf);
+                if (retval == 0) {
+                    EnableWindow(HwndMakeroom, FALSE);
+                    EnableWindow(HwndIpaddress, FALSE);
+                    EnableWindow(HwndEditNickname, FALSE);
+                    EnableWindow(HwndConnectroom, FALSE);
+                    SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf);
+                }
+                else if (retval == -1) {
+                    char warnbuf[40];
+                    strcpy(warnbuf, (char*)"중복된 닉네임입니다.");
+                    SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, warnbuf);
+                }
+                else if (retval == -2) {
+                    char warnbuf[40];
+                    strcpy(warnbuf, (char*)"서버에 연결할 수 없습니다.");
+                    SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, warnbuf);
                 }
             }
             return TRUE;
