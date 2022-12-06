@@ -14,6 +14,7 @@
 DWORD WINAPI roomServerThread(LPVOID arg);
 DWORD WINAPI roomClientThread(LPVOID arg);
 DWORD WINAPI roomDataProcessingThread(LPVOID arg);
+DWORD WINAPI roomDataResendThread(LPVOID arg);
 
 
 typedef struct PLAYERINFO {
@@ -51,5 +52,6 @@ private:
 
 struct CLIENTINFO {
 	SOCKET sock;
-	WAITING_ROOM wrp;
+	HWND dlg;
+	short num;
 };

@@ -7,14 +7,20 @@ DWORD WINAPI roomServerThread(LPVOID arg)
 	SOCKET server_sock = wr_server.GetMySock();
 	struct sockaddr_in clientaddr;
 	int addrlen = sizeof(clientaddr);
+	HANDLE hnd;
 
 
 	while (1) {
 		client_sock = accept(server_sock, (struct sockaddr*)&clientaddr, &addrlen);
+		short cl_num = wr_server.FindBlankPlayer();
 		CLIENTINFO cinfo;
 		cinfo.sock = client_sock;
-		cinfo.wrp = wr_server;
-		HANDLE hnd = CreateThread(NULL, 0, roomDataProcessingThread, (LPVOID)&cinfo, 0, NULL);
+		cinfo.dlg = wr_server.GetDlgHandle();
+		cinfo.num = cl_num;
+		wr_server.SetPlayerNickname(cl_num, (char*)"1");
+		hnd = CreateThread(NULL, 0, roomDataProcessingThread, (LPVOID)&cinfo, 0, NULL);
+		CloseHandle(hnd);
+		hnd = CreateThread(NULL, 0, roomDataResendThread, (LPVOID)&cinfo, 0, NULL);
 		CloseHandle(hnd);
 	}
 
@@ -29,10 +35,8 @@ DWORD WINAPI roomClientThread(LPVOID arg)
 	HWND hDlg = wr_server.GetDlgHandle();
 	char recvcode[30];
 
-
 	int retval = recv(sv_sock, recvcode, NICKBUFSIZE, MSG_WAITALL);
 	SetDlgItemTextA(hDlg, IDC_HOSTNAME, recvcode); // IDC_P1NAME + n = IDC_P(n+1)NAME
-
 
 	while (1) {
 		retval = recv(sv_sock, recvcode, 3, MSG_WAITALL);
@@ -51,38 +55,52 @@ DWORD WINAPI roomClientThread(LPVOID arg)
 DWORD WINAPI roomDataProcessingThread(LPVOID arg)
 {
 	struct CLIENTINFO cl_info = *(struct CLIENTINFO*)arg;
-	short cl_num = cl_info.wrp.FindBlankPlayer();
-	if (cl_num == -1) return 0;
 
-	cl_info.wrp.SetPlayerSock(cl_num, cl_info.sock);
-	SOCKET cl_sock = cl_info.wrp.GetPlayer(cl_num).sock;
-	HWND hDlg = cl_info.wrp.GetDlgHandle();
+	short cl_num = cl_info.num;
+	if (cl_num == -1) return 0;
+	SOCKET cl_sock = cl_info.sock;
+	HWND hDlg = cl_info.dlg;
 	char recvcode[30];
 
 	while (1) {
 		int retval = recv(cl_sock, recvcode, 4, MSG_WAITALL);
 		if (strcmp(recvcode, "NNN") == 0) {
 			recv(cl_sock, recvcode, NICKBUFSIZE, MSG_WAITALL);
-			cl_info.wrp.SetPlayerNickname(cl_num, recvcode);
-			SetDlgItemTextA(hDlg, IDC_P1NAME, recvcode); // IDC_P1NAME + n = IDC_P(n+1)NAME
-
-			// 재분배
-			char nickbuf[NICKBUFSIZE];
-			GetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf, NICKBUFSIZE);
-			send(cl_sock, nickbuf, NICKBUFSIZE, 0);
-			for (int i{}; i < 3; ++i) { 
-				if (strcmp(cl_info.wrp.GetPlayer(i).nickname, "") != 0) {
-					char tmpstr[2] = "";
-					SOCKET tmpsock = cl_info.wrp.GetPlayer(i).sock;
-					_itoa(cl_num, tmpstr, 10);
-					send(tmpsock, (char*)"NN", 3, 0);
-					send(tmpsock, tmpstr, 2, 0);
-					send(tmpsock, recvcode, NICKBUFSIZE, 0);
-				}
-			}
+			SetDlgItemTextA(hDlg, IDC_P1NAME+cl_num, recvcode); // IDC_P1NAME + n = IDC_P(n+1)NAME
 		}
 	}
 	closesocket(cl_sock);
+	return 0;
+}
+
+DWORD WINAPI roomDataResendThread(LPVOID arg)
+{
+	struct CLIENTINFO cl_info = *(struct CLIENTINFO*)arg;
+
+	short cl_num = cl_info.num;
+	if (cl_num == -1) return 0;
+	SOCKET cl_sock = cl_info.sock;
+	HWND hDlg = cl_info.dlg;
+	char recvcode[30];
+	char nickbuf[NICKBUFSIZE];
+	char tmpstr[2];
+
+	// Host Nickname
+	GetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf, NICKBUFSIZE);
+	send(cl_sock, nickbuf, NICKBUFSIZE, 0);
+
+	while (1) {
+		// 재분배
+		for (int i{}; i < 3; ++i) {
+			GetDlgItemTextA(hDlg, IDC_P1NAME + i, nickbuf, NICKBUFSIZE);
+			_itoa(i, tmpstr, 10);
+			send(cl_sock, (char*)"NN", 3, 0);
+			send(cl_sock, tmpstr, 2, 0);
+			send(cl_sock, nickbuf, NICKBUFSIZE, 0);
+		}
+		Sleep(1000);
+	}
+
 	return 0;
 }
 
