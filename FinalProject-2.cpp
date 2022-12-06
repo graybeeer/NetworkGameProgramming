@@ -470,6 +470,7 @@ INT_PTR CALLBACK DialogProc_Server(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
     HWND HwndConnectroom = GetDlgItem(hDlg, IDC_CONNECTROOM);
     char nickbuf[NICKBUFSIZE];
     char ipbuf[60] = "\0";
+    char warnbuf[40];
 
 
     switch (uMsg) {
@@ -479,7 +480,8 @@ INT_PTR CALLBACK DialogProc_Server(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
         switch (LOWORD(wParam)) {
         case IDC_MAKEROOM:
             GetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf, NICKBUFSIZE);
-            if (nickbuf[0] != '\0') {
+            nickbuf[NICKBUFSIZE - 1] = '\0';
+            if (nickbuf[0] != '\0' && nickbuf[0] != ' ') {
                 if (wr.MAKE_ROOM(hDlg) == 0) {
                     EnableWindow(HwndMakeroom, FALSE);
                     EnableWindow(HwndIpaddress, FALSE);
@@ -490,10 +492,15 @@ INT_PTR CALLBACK DialogProc_Server(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
                     SetDlgItemTextA(hDlg, IDC_IPADDRESS, ipbuf);
                 }
             }
+            else if (nickbuf[0] == ' ') {
+                strcpy(warnbuf, (char*)"사용 불가능한 닉네임입니다. (공백닉네임)");
+                SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, warnbuf);
+            }
             return TRUE;
         case IDC_CONNECTROOM:
             GetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf, NICKBUFSIZE);
-            if (nickbuf[0] != '\0') {
+            nickbuf[NICKBUFSIZE - 1] = '\0';
+            if (nickbuf[0] != '\0' && nickbuf[0] != ' ') {
                 GetDlgItemTextA(hDlg, IDC_IPADDRESS, ipbuf, NICKBUFSIZE);
                 int retval = wr.CONNECT_ROOM(hDlg, ipbuf, nickbuf);
                 if (retval == 0) {
@@ -504,15 +511,17 @@ INT_PTR CALLBACK DialogProc_Server(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
                     SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf);
                 }
                 else if (retval == -1) {
-                    char warnbuf[40];
-                    strcpy(warnbuf, (char*)"중복된 닉네임입니다.");
+                    strcpy(warnbuf, (char*)"사용 불가능한 닉네임입니다. (중복닉네임)");
                     SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, warnbuf);
                 }
                 else if (retval == -2) {
-                    char warnbuf[40];
                     strcpy(warnbuf, (char*)"서버에 연결할 수 없습니다.");
                     SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, warnbuf);
                 }
+            }
+            else if (nickbuf[0] == ' ') {
+                strcpy(warnbuf, (char*)"사용 불가능한 닉네임입니다. (공백닉네임)");
+                SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, warnbuf);
             }
             return TRUE;
         }

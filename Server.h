@@ -9,7 +9,7 @@
 #pragma comment(lib, "ws2_32") // ws2_32.lib ¸µÅ©
 
 #define SERVERPORT 4444
-#define NICKBUFSIZE 20
+#define NICKBUFSIZE 21
 
 DWORD WINAPI roomServerThread(LPVOID arg);
 DWORD WINAPI roomClientThread(LPVOID arg);

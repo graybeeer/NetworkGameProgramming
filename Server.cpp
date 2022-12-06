@@ -17,10 +17,7 @@ DWORD WINAPI roomServerThread(LPVOID arg)
 		cinfo.sock = client_sock;
 		cinfo.dlg = wr_server.GetDlgHandle();
 		cinfo.num = cl_num;
-		wr_server.SetPlayerNickname(cl_num, (char*)"1");
 		hnd = CreateThread(NULL, 0, roomDataProcessingThread, (LPVOID)&cinfo, 0, NULL);
-		CloseHandle(hnd);
-		hnd = CreateThread(NULL, 0, roomDataResendThread, (LPVOID)&cinfo, 0, NULL);
 		CloseHandle(hnd);
 	}
 
@@ -67,6 +64,25 @@ DWORD WINAPI roomDataProcessingThread(LPVOID arg)
 		int retval = recv(cl_sock, recvcode, 4, MSG_WAITALL);
 		if (strcmp(recvcode, "NNN") == 0) {
 			retval = recv(cl_sock, recvcode, NICKBUFSIZE, MSG_WAITALL);
+			char tmpnamebuf[30];
+			bool isAlreadyExist = false;
+			for (int i{}; i < 4; ++i) {
+				GetDlgItemTextA(hDlg, IDC_HOSTNAME + i, tmpnamebuf, 30);
+				if (strcmp(recvcode, tmpnamebuf) == 0) {// 기존에 있는 닉네임인지 검사
+					isAlreadyExist = true;
+					break;
+				}
+			}
+			if (isAlreadyExist) {
+				send(cl_sock, "X", 2, 0);
+				break;
+			}
+			else {
+				send(cl_sock, "O", 2, 0);
+				HANDLE hnd = CreateThread(NULL, 0, roomDataResendThread, (LPVOID)&cl_info, 0, NULL);
+				CloseHandle(hnd);
+			}
+
 			SetDlgItemTextA(hDlg, IDC_P1NAME + cl_num, recvcode); // IDC_P1NAME + n = IDC_P(n+1)NAME
 		}
 
@@ -178,6 +194,13 @@ int WAITING_ROOM::CONNECT_ROOM(HWND dlg, char* serverip, char* name)
 	send(my_sock, (char*)"NNN", 4, 0);
 	send(my_sock, name, NICKBUFSIZE, 0);
 
+	char tmpbuf[2];
+	recv(my_sock, tmpbuf, 2, MSG_WAITALL);
+
+	if (strcmp(tmpbuf, "X") == 0) {
+		return -1;
+	}
+
 	HANDLE hnd = CreateThread(NULL, 0, roomClientThread, (LPVOID)this, 0, NULL);
 	CloseHandle(hnd);
 
@@ -186,8 +209,10 @@ int WAITING_ROOM::CONNECT_ROOM(HWND dlg, char* serverip, char* name)
 
 int WAITING_ROOM::FindBlankPlayer()
 {
+	char tmpname[NICKBUFSIZE];
 	for (int i{}; i < 3; ++i) {
-		if (strcmp(player[i].nickname, "") == 0)
+		GetDlgItemTextA(DlgHandle, IDC_P1NAME + i, tmpname, 20);
+		if (strcmp(tmpname, "") == 0)
 			return i;
 	}
 	return -1;
