@@ -61,12 +61,18 @@ DWORD WINAPI roomDataProcessingThread(LPVOID arg)
 	SOCKET cl_sock = cl_info.sock;
 	HWND hDlg = cl_info.dlg;
 	char recvcode[30];
+	int retval = 0;
 
 	while (1) {
 		int retval = recv(cl_sock, recvcode, 4, MSG_WAITALL);
 		if (strcmp(recvcode, "NNN") == 0) {
-			recv(cl_sock, recvcode, NICKBUFSIZE, MSG_WAITALL);
-			SetDlgItemTextA(hDlg, IDC_P1NAME+cl_num, recvcode); // IDC_P1NAME + n = IDC_P(n+1)NAME
+			retval = recv(cl_sock, recvcode, NICKBUFSIZE, MSG_WAITALL);
+			SetDlgItemTextA(hDlg, IDC_P1NAME + cl_num, recvcode); // IDC_P1NAME + n = IDC_P(n+1)NAME
+		}
+
+		if (retval <= 0) {
+			SetDlgItemTextA(hDlg, IDC_P1NAME + cl_num, ""); // IDC_P1NAME + n = IDC_P(n+1)NAME
+			break;
 		}
 	}
 	closesocket(cl_sock);
@@ -84,6 +90,7 @@ DWORD WINAPI roomDataResendThread(LPVOID arg)
 	char recvcode[30];
 	char nickbuf[NICKBUFSIZE];
 	char tmpstr[2];
+	int retval = 0;
 
 	// Host Nickname
 	GetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf, NICKBUFSIZE);
@@ -94,9 +101,12 @@ DWORD WINAPI roomDataResendThread(LPVOID arg)
 		for (int i{}; i < 3; ++i) {
 			GetDlgItemTextA(hDlg, IDC_P1NAME + i, nickbuf, NICKBUFSIZE);
 			_itoa(i, tmpstr, 10);
-			send(cl_sock, (char*)"NN", 3, 0);
-			send(cl_sock, tmpstr, 2, 0);
-			send(cl_sock, nickbuf, NICKBUFSIZE, 0);
+			retval = send(cl_sock, (char*)"NN", 3, 0);
+			retval = send(cl_sock, tmpstr, 2, 0);
+			retval = send(cl_sock, nickbuf, NICKBUFSIZE, 0);
+		}
+		if (retval == SOCKET_ERROR) {
+			break;
 		}
 		Sleep(1000);
 	}
