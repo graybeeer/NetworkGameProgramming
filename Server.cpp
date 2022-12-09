@@ -13,11 +13,10 @@ DWORD WINAPI roomServerThread(LPVOID arg)
 	while (1) {
 		client_sock = accept(server_sock, (struct sockaddr*)&clientaddr, &addrlen);
 		short cl_num = wr_server.FindBlankPlayer();
-		CLIENTINFO cinfo;
-		cinfo.sock = client_sock;
-		cinfo.dlg = wr_server.GetDlgHandle();
-		cinfo.num = cl_num;
-		hnd = CreateThread(NULL, 0, roomDataProcessingThread, (LPVOID)&cinfo, 0, NULL);
+		if (cl_num == -1) return 0;
+		wr_server.SetMyNum(cl_num);
+		wr_server.SetMySock(client_sock);
+		hnd = CreateThread(NULL, 0, roomDataProcessingThread, (LPVOID)&wr_server, 0, NULL);
 		CloseHandle(hnd);
 	}
 
@@ -37,72 +36,52 @@ DWORD WINAPI roomClientThread(LPVOID arg)
 
 	while (1) {
 		retval = recv(sv_sock, recvcode, 3, MSG_WAITALL);
-		if (strcmp(recvcode, "NN") == 0) {
-			recv(sv_sock, recvcode, 2, MSG_WAITALL);
-			int editnum = atoi(recvcode);
-			recv(sv_sock, recvcode, NICKBUFSIZE, MSG_WAITALL);
-			wr_server.SetPlayerNickname(editnum, recvcode);
-			SetDlgItemTextA(hDlg, IDC_P1NAME+editnum, recvcode); // IDC_P1NAME + n = IDC_P(n+1)NAME
+
+		// 경우에 따라 상호작용 종료
+		if (wr_server.stringAnalysis(recvcode) == -1) {
+			break;
 		}
 	}
 
+	// 서버와의 연결 종료와 처리
+	for (int i{}; i < 4; ++i)
+		SetDlgItemTextA(hDlg, IDC_HOSTNAME + i, ""); // IDC_P1NAME + n = IDC_P(n+1)NAME
+	wr_server.enableConnectGui(TRUE);
+	closesocket(sv_sock);
 	return 0;
 }
 
 DWORD WINAPI roomDataProcessingThread(LPVOID arg)
 {
-	struct CLIENTINFO cl_info = *(struct CLIENTINFO*)arg;
+	struct WAITING_ROOM wr_server = *(struct WAITING_ROOM*)arg;
 
-	short cl_num = cl_info.num;
-	if (cl_num == -1) return 0;
-	SOCKET cl_sock = cl_info.sock;
-	HWND hDlg = cl_info.dlg;
+	short cl_num = wr_server.GetMyNum();
+	SOCKET cl_sock = wr_server.GetMySock();
+	HWND hDlg = wr_server.GetDlgHandle();
 	char recvcode[30];
 	int retval = 0;
 
 	while (1) {
-		int retval = recv(cl_sock, recvcode, 4, MSG_WAITALL);
-		if (strcmp(recvcode, "NNN") == 0) {
-			retval = recv(cl_sock, recvcode, NICKBUFSIZE, MSG_WAITALL);
-			char tmpnamebuf[30];
-			bool isAlreadyExist = false;
-			for (int i{}; i < 4; ++i) {
-				GetDlgItemTextA(hDlg, IDC_HOSTNAME + i, tmpnamebuf, 30);
-				if (strcmp(recvcode, tmpnamebuf) == 0) {// 기존에 있는 닉네임인지 검사
-					isAlreadyExist = true;
-					break;
-				}
-			}
-			if (isAlreadyExist) {
-				send(cl_sock, "X", 2, 0);
-				break;
-			}
-			else {
-				send(cl_sock, "O", 2, 0);
-				HANDLE hnd = CreateThread(NULL, 0, roomDataResendThread, (LPVOID)&cl_info, 0, NULL);
-				CloseHandle(hnd);
-			}
+		int retval = recv(cl_sock, recvcode, 3, MSG_WAITALL);
 
-			SetDlgItemTextA(hDlg, IDC_P1NAME + cl_num, recvcode); // IDC_P1NAME + n = IDC_P(n+1)NAME
-		}
-
-		if (retval <= 0) {
-			SetDlgItemTextA(hDlg, IDC_P1NAME + cl_num, ""); // IDC_P1NAME + n = IDC_P(n+1)NAME
+		// 경우에 따라 상호작용 종료
+		if (wr_server.stringAnalysis(recvcode) == -1 || retval <= 0)
 			break;
-		}
 	}
+
+	// 클라이언트 cl_num과의 연결 종료와 처리
+	SetDlgItemTextA(hDlg, IDC_P1NAME + cl_num, ""); // IDC_P1NAME + n = IDC_P(n+1)NAME
 	closesocket(cl_sock);
 	return 0;
 }
 
 DWORD WINAPI roomDataResendThread(LPVOID arg)
 {
-	struct CLIENTINFO cl_info = *(struct CLIENTINFO*)arg;
+	struct WAITING_ROOM wr_server = *(struct WAITING_ROOM*)arg;
 
-	short cl_num = cl_info.num;
-	if (cl_num == -1) return 0;
-	SOCKET cl_sock = cl_info.sock;
-	HWND hDlg = cl_info.dlg;
+	short cl_num = wr_server.GetMyNum();
+	SOCKET cl_sock = wr_server.GetMySock();
+	HWND hDlg = wr_server.GetDlgHandle();
 	char recvcode[30];
 	char nickbuf[NICKBUFSIZE];
 	char tmpstr[2];
@@ -135,6 +114,12 @@ WAITING_ROOM::WAITING_ROOM()
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 }
 
+WAITING_ROOM::WAITING_ROOM(HWND dlg)
+{
+	WSAStartup(MAKEWORD(2, 2), &wsa);
+	DlgHandle = dlg;
+}
+
 WAITING_ROOM::~WAITING_ROOM()
 {
 }
@@ -144,6 +129,9 @@ WAITING_ROOM::WAITING_ROOM(const WAITING_ROOM& wr)
 	wsa = wr.wsa;
 	my_sock = wr.my_sock;
 	serveraddr = wr.serveraddr;
+
+	is_host = wr.is_host;
+	my_num = wr.my_num;
 	DlgHandle = wr.DlgHandle;
 	for (int i{}; i < 3; ++i) {
 		player[i].isReady = wr.player[i].isReady;
@@ -152,9 +140,9 @@ WAITING_ROOM::WAITING_ROOM(const WAITING_ROOM& wr)
 	}
 }
 
-int WAITING_ROOM::MAKE_ROOM(HWND dlg)
+int WAITING_ROOM::MAKE_ROOM()
 {
-	DlgHandle = dlg;
+	is_host = true;
 	int retval = 0;
 	my_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (my_sock == SOCKET_ERROR)
@@ -177,9 +165,9 @@ int WAITING_ROOM::MAKE_ROOM(HWND dlg)
 	return 0;
 }
 
-int WAITING_ROOM::CONNECT_ROOM(HWND dlg, char* serverip, char* name)
+int WAITING_ROOM::CONNECT_ROOM(char* serverip, char* name)
 {
-	DlgHandle = dlg;
+	is_host = false;
 	my_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (my_sock == INVALID_SOCKET)
 		return -2;
@@ -191,7 +179,7 @@ int WAITING_ROOM::CONNECT_ROOM(HWND dlg, char* serverip, char* name)
 	if (connect(my_sock, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) == SOCKET_ERROR)
 		return -2;
 
-	send(my_sock, (char*)"NNN", 4, 0);
+	send(my_sock, (char*)"NN", 3, 0);
 	send(my_sock, name, NICKBUFSIZE, 0);
 
 	char tmpbuf[2];
@@ -218,30 +206,102 @@ int WAITING_ROOM::FindBlankPlayer()
 	return -1;
 }
 
-PlayerInfo WAITING_ROOM::GetPlayer(int n)
+// 기존에 있는 닉네임인지 검사
+bool WAITING_ROOM::checkNickReduplication(char* name)
 {
-	if (n > -1 && n < 3 && player[n].sock != INVALID_SOCKET)
-		return player[n];
-	return PlayerInfo();
+	char tmpname[NICKBUFSIZE];
+	for (int i{}; i < 4; ++i) {
+		GetDlgItemTextA(DlgHandle, IDC_HOSTNAME + i, tmpname, NICKBUFSIZE);
+		if (strcmp(name, tmpname) == 0) {
+			return true;
+		}
+	}
+	return false;
 }
 
-void WAITING_ROOM::SetPlayerSock(int n, SOCKET sock)
+// 정상적인 접속 시도인지 검사
+bool WAITING_ROOM::checkJoin(char* name)
 {
-	if (n > -1 && n < 3) {
-		player[n].sock = sock;
+	bool isAlreadyExist = checkNickReduplication(name);
+	if (isAlreadyExist) {
+		send(my_sock, "X", 2, 0); // 닉네임 중복이라는 정보 클라이언트 측으로 전송
+		return false;
 	}
+
+	send(my_sock, "O", 2, 0); // 정상적으로 접속하였다는 정보 클라이언트 측으로 전송
+	HANDLE hnd = CreateThread(NULL, 0, roomDataResendThread, (LPVOID)this, 0, NULL);
+	CloseHandle(hnd);
+	return true;
 }
 
-void WAITING_ROOM::SetPlayerNickname(int n, char* name)
+int WAITING_ROOM::stringAnalysis(char* recvdata)
 {
-	if (n > -1 && n < 3) {
-		strcpy(player[n].nickname, name);
+	int retval = 0;
+	char recvcode[30];
+
+	// Host인 경우의 수신정보 처리
+	if (is_host) {
+		if (strcmp(recvdata, "NN") == 0) { // 닉네임 정보 수신의 경우
+			if (recv(my_sock, recvcode, NICKBUFSIZE, MSG_WAITALL) <= 0) 
+				return -1; // 접속 종료
+			if (checkJoin(recvcode))
+				SetDlgItemTextA(DlgHandle, IDC_P1NAME + my_num, recvcode); // IDC_P1NAME + n = IDC_P(n+1)NAME
+			else 
+				return -1; // 닉네임 중복
+		}
 	}
+	// Client인 경우의 수신정보 처리
+	else {
+		if (strcmp(recvdata, "NN") == 0) {
+			if (recv(my_sock, recvcode, 2, MSG_WAITALL) <= 0)
+				return -1;
+			int editnum = atoi(recvcode);
+			if (recv(my_sock, recvcode, NICKBUFSIZE, MSG_WAITALL) <= 0)
+				return -1;
+			SetDlgItemTextA(DlgHandle, IDC_P1NAME + editnum, recvcode); // IDC_P1NAME + n = IDC_P(n+1)NAME
+		}
+	}
+
+	return 0;
+}
+
+void WAITING_ROOM::enableConnectGui(bool isEnable)
+{
+	HWND HwndEditNickname = GetDlgItem(DlgHandle, IDC_EDITNICKNAME);
+	HWND HwndIpaddress = GetDlgItem(DlgHandle, IDC_IPADDRESS);
+	HWND HwndMakeroom = GetDlgItem(DlgHandle, IDC_MAKEROOM);
+	HWND HwndConnectroom = GetDlgItem(DlgHandle, IDC_CONNECTROOM);
+	EnableWindow(HwndMakeroom, isEnable);
+	EnableWindow(HwndIpaddress, isEnable);
+	EnableWindow(HwndEditNickname, isEnable);
+	EnableWindow(HwndConnectroom, isEnable);
+}
+
+void WAITING_ROOM::printErrorEditbox(char* errstr)
+{
+	char warnbuf[40];
+	strcpy(warnbuf, errstr);
+	SetDlgItemTextA(DlgHandle, IDC_EDITNICKNAME, warnbuf);
+}
+
+int WAITING_ROOM::GetMyNum()
+{
+	return my_num;
+}
+
+void WAITING_ROOM::SetMyNum(int in)
+{
+	my_num = in;
 }
 
 SOCKET WAITING_ROOM::GetMySock()
 {
 	return my_sock;
+}
+
+void WAITING_ROOM::SetMySock(SOCKET in)
+{
+	my_sock = in;
 }
 
 HWND WAITING_ROOM::GetDlgHandle()

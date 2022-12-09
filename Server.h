@@ -27,26 +27,36 @@ class WAITING_ROOM
 {
 public:
 	WAITING_ROOM();
+	WAITING_ROOM(HWND dlg);
 	~WAITING_ROOM();
 	WAITING_ROOM(const WAITING_ROOM& wr);
-	int MAKE_ROOM(HWND dlg);
-	int CONNECT_ROOM(HWND dlg, char* serverip, char* name);
+	int MAKE_ROOM();
+	int CONNECT_ROOM(char* serverip, char* name);
 
-	int FindBlankPlayer();
+	int		FindBlankPlayer();
+	bool	checkNickReduplication(char* name);
+	bool	checkJoin(char* name);
+	int		stringAnalysis(char* recvdata);
 
-	PlayerInfo	GetPlayer(int n);
-	void		SetPlayerSock(int n, SOCKET sock);
-	void		SetPlayerNickname(int n, char* name);
+	void	enableConnectGui(bool isEnable);
+	void	printErrorEditbox(char* errstr);
+
+	int			GetMyNum();
+	void		SetMyNum(int in);
 	SOCKET		GetMySock();
+	void		SetMySock(SOCKET in);
 	HWND		GetDlgHandle();
 
 
 private:
-	PlayerInfo player[3];
-	WSADATA wsa;
-	SOCKET my_sock;
-	struct sockaddr_in serveraddr;
-	HWND DlgHandle;
+	PlayerInfo			player[3];
+	WSADATA				wsa;
+	SOCKET				my_sock;
+	struct sockaddr_in	serveraddr;
+	
+	bool				is_host{ false };
+	int					my_num;
+	HWND				DlgHandle;
 	
 };
 

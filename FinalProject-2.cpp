@@ -463,18 +463,13 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 // 대화상자 프로시저
 INT_PTR CALLBACK DialogProc_Server(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    WAITING_ROOM wr;
-    HWND HwndEditNickname = GetDlgItem(hDlg, IDC_EDITNICKNAME);
-    HWND HwndIpaddress = GetDlgItem(hDlg, IDC_IPADDRESS);
-    HWND HwndMakeroom = GetDlgItem(hDlg, IDC_MAKEROOM);
-    HWND HwndConnectroom = GetDlgItem(hDlg, IDC_CONNECTROOM);
+    WAITING_ROOM wr(hDlg);
     char nickbuf[NICKBUFSIZE];
     char ipbuf[60] = "\0";
-    char warnbuf[40];
-
 
     switch (uMsg) {
     case WM_INITDIALOG:
+        SetDlgItemTextA(hDlg, IDC_IPADDRESS, "127.0.0.1");
         return TRUE;
     case WM_COMMAND:
         switch (LOWORD(wParam)) {
@@ -482,46 +477,34 @@ INT_PTR CALLBACK DialogProc_Server(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
             GetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf, NICKBUFSIZE);
             nickbuf[NICKBUFSIZE - 1] = '\0';
             if (nickbuf[0] != '\0' && nickbuf[0] != ' ') {
-                if (wr.MAKE_ROOM(hDlg) == 0) {
-                    EnableWindow(HwndMakeroom, FALSE);
-                    EnableWindow(HwndIpaddress, FALSE);
-                    EnableWindow(HwndEditNickname, FALSE);
-                    EnableWindow(HwndConnectroom, FALSE);
+                if (wr.MAKE_ROOM() == 0) {
+                    wr.enableConnectGui(FALSE);
                     SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf);
                     SetDlgItemTextA(hDlg, IDC_HOSTNAME, nickbuf);
                     SetDlgItemTextA(hDlg, IDC_IPADDRESS, ipbuf);
                 }
             }
-            else if (nickbuf[0] == ' ') {
-                strcpy(warnbuf, (char*)"사용 불가능한 닉네임입니다. (공백닉네임)");
-                SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, warnbuf);
-            }
+            else if (nickbuf[0] == ' ')
+                wr.printErrorEditbox((char*)"사용 불가능한 닉네임입니다. (공백닉네임)");
+
             return TRUE;
         case IDC_CONNECTROOM:
             GetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf, NICKBUFSIZE);
             nickbuf[NICKBUFSIZE - 1] = '\0';
             if (nickbuf[0] != '\0' && nickbuf[0] != ' ') {
                 GetDlgItemTextA(hDlg, IDC_IPADDRESS, ipbuf, NICKBUFSIZE);
-                int retval = wr.CONNECT_ROOM(hDlg, ipbuf, nickbuf);
+                int retval = wr.CONNECT_ROOM(ipbuf, nickbuf);
                 if (retval == 0) {
-                    EnableWindow(HwndMakeroom, FALSE);
-                    EnableWindow(HwndIpaddress, FALSE);
-                    EnableWindow(HwndEditNickname, FALSE);
-                    EnableWindow(HwndConnectroom, FALSE);
+                    wr.enableConnectGui(FALSE);
                     SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, nickbuf);
                 }
-                else if (retval == -1) {
-                    strcpy(warnbuf, (char*)"사용 불가능한 닉네임입니다. (중복닉네임)");
-                    SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, warnbuf);
-                }
-                else if (retval == -2) {
-                    strcpy(warnbuf, (char*)"서버에 연결할 수 없습니다.");
-                    SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, warnbuf);
-                }
+                else if (retval == -1)
+                    wr.printErrorEditbox((char*)"사용 불가능한 닉네임입니다. (중복닉네임)");
+                else if (retval == -2)
+                    wr.printErrorEditbox((char*)"서버에 연결할 수 없습니다.");
             }
             else if (nickbuf[0] == ' ') {
-                strcpy(warnbuf, (char*)"사용 불가능한 닉네임입니다. (공백닉네임)");
-                SetDlgItemTextA(hDlg, IDC_EDITNICKNAME, warnbuf);
+                wr.printErrorEditbox((char*)"사용 불가능한 닉네임입니다. (공백닉네임)");
             }
             return TRUE;
         }
